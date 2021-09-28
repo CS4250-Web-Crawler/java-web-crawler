@@ -37,7 +37,7 @@ public class Crawler {
             
             Elements element = doc.select("html");
             
-            if(element.attr("lang") == desiredLang) { //verify desired language
+            if(element.attr("lang").equals(desiredLang)) { //verify desired language
                 score++;
                 
             }

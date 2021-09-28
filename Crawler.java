@@ -17,8 +17,8 @@ public class Crawler {
    
     private static void crawl(String url, int startDepth, int maxDepth, ArrayList<String> linkCollection, String desiredLang) throws IOException{
         if(startDepth <= maxDepth) {
-            verify(url, desiredLang, linkCollection);
-        
+            if(verify(url, desiredLang, linkCollection) == 3){
+                linkCollection.add(url) // url meets the 3 qualifications, so add it to the array list
         }
     }
     

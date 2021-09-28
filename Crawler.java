@@ -59,7 +59,6 @@ public class Crawler {
         }
     }
      public static void main(String[] args) throws IOException{
-        System.out.println("SOMETHING");
         Crawler test = new Crawler();
         test.crawl(PRIMARY_SEED, ENGLISH);
         System.out.println(test.linkCollection);

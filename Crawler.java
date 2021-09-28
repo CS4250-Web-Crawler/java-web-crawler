@@ -1,55 +1,67 @@
 import java.io.IOException;
-import java.util.ArrayList;
-import org.jsoup.Connection;
+import java.util.HashMap;
 import org.jsoup.Jsoup;
+import org.jsoup.Connection;
 import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 public class Crawler {
-    public static void main(String[] args) throws IOException{
-        String seed = "https://www.wikipedia.org/";
-        int startDepth = 1;
-        int maxDepth = 5;
-        String desiredLang = "en";
-        crawl(seed, startDepth, maxDepth, new ArrayList<String>(), desiredLang); 
-            
+    public static final String ENGLISH = "en";
+    public static final String SPANISH = "es";
+    public static final String CHINESE = "zh";
+    public static final String FRENCH = "fr";
+    public static final int MAX_CRAWL_COUNT = 5;
+    public static final String PRIMARY_SEED = "https://www.wikipedia.org/";
+
+    // key = visited url, value = number of outlinks
+    public HashMap<String, Integer> linkCollection;
+    // keeps the count of visited urls
+    public int visitedLinksCount;
+    // holds the html content for each visited url
+    public String[] htmlContents;
+
+    public Crawler() {
+        linkCollection = new HashMap<>();
+        visitedLinksCount = 0;
+        htmlContents = new String[MAX_CRAWL_COUNT]; 
     }
    
-    private static void crawl(String url, int startDepth, int maxDepth, ArrayList<String> linkCollection, String desiredLang) throws IOException{
-        if(startDepth <= maxDepth) {
-            verify(url, desiredLang, linkCollection);
-        
+    public void crawl(String url, String lang) throws IOException {
+        if (!linkCollection.containsKey(url) && visitedLinksCount < MAX_CRAWL_COUNT) {
+            System.out.println("CURRENT URL: " + url + " and CURRENT COUNT: " + visitedLinksCount);
+
+            try {
+                Connection connection = Jsoup.connect(url);
+                Document document = connection.get();
+
+                Elements html = document.select("html");
+                htmlContents[visitedLinksCount] = html.toString();
+
+                Elements linksOnPage = document.select("a[href]");
+
+                if (html.attr("lang").equals(lang)) {
+                    int outlinksCount = 0;
+            
+                    for (Element page : linksOnPage) {
+                        outlinksCount++;
+                        String plainUrl = page.attr("abs:href");
+                        visitedLinksCount++;
+                        linkCollection.put(url, outlinksCount);
+                        crawl(plainUrl, lang);
+                    }
+
+                    linkCollection.put(url, outlinksCount);
+                }
+            } catch (IOException e) {
+                System.out.println("Error for " + url + ": " + e.getMessage());
+            }
         }
     }
-    
-     private static int verify(String url, String desiredLang,  ArrayList<String> linkCollection) throws IOException{
-        int score = 0;
-        try {
-            Connection connection = Jsoup.connect(url);
-            
-            Document doc = connection.get();
-        
-        
-            if(connection.response().statusCode() == 200){  //verify connection
-                score++;
-            
-            }
-            
-            Elements element = doc.select("html");
-            
-            if(element.attr("lang").equals(desiredLang)) { //verify desired language
-                score++;
-                
-            }
-            
-            if(linkCollection.contains(url) == false) { //verify duplicates
-                score++;
-            }
-            
-            return score;
-        }
-        catch(IOException e) {
-            return (Integer) null;
-        }
-     }
+     public static void main(String[] args) throws IOException{
+        System.out.println("SOMETHING");
+        Crawler test = new Crawler();
+        test.crawl(PRIMARY_SEED, ENGLISH);
+        System.out.println(test.linkCollection);
+    }
 }

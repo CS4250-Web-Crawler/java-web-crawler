@@ -14,8 +14,7 @@ public class Crawler {
         crawl(seed, startDepth, maxDepth, new ArrayList<String>(), desiredLang); 
             
     }
-        
-    
+   
     private static void crawl(String url, int startDepth, int maxDepth, ArrayList<String> linkCollection, String desiredLang) throws IOException{
         if(startDepth <= maxDepth) {
             verify(url, desiredLang, linkCollection);
@@ -52,7 +51,5 @@ public class Crawler {
         catch(IOException e) {
             return (Integer) null;
         }
-    }
-    
-    
+     }
 }

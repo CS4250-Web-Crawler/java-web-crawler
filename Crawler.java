@@ -10,7 +10,7 @@ import org.jsoup.nodes.Element;
 import org.jsoup.safety.Whitelist;
 import org.jsoup.select.Elements;
 
-public class MaryCrawler {
+public class Crawler {
     public static final String ENGLISH = "en";
     public static final String SPANISH = "es";
     public static final String CHINESE = "zh";

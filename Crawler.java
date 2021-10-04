@@ -1,3 +1,7 @@
+package web_crawler2;
+
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.HashMap;
 import org.jsoup.Jsoup;
@@ -11,7 +15,7 @@ public class Crawler {
     public static final String SPANISH = "es";
     public static final String CHINESE = "zh";
     public static final String FRENCH = "fr";
-    public static final int MAX_CRAWL_COUNT = 1;
+    public static final int MAX_CRAWL_COUNT = 5;
     public static final String PRIMARY_SEED = "https://www.wikipedia.org/";    
 
     // key = visited url, value = number of outlinks (csv)
@@ -19,7 +23,7 @@ public class Crawler {
     // keeps the count of visited urls (limit)
     public int visitedLinksCount;
     // holds the html content for each visited url (file)
-    public String[] htmlContents;
+    public static String[] htmlContents;
 
     public Crawler() {
         linkCollection = new HashMap<>();
@@ -66,10 +70,42 @@ public class Crawler {
             }
         }
     }
+    
+    // iterate and write all html content to a text file in respository folder 
+    public static void download(String[] content, String lang) {
+    	int arraySize = content.length;
+    	
+    	//create a repository folder to hold all lang html files
+    	try {
+    		File folder = new File("repository");
+        	folder.mkdir();
+        	//create file based on lang
+        	File file = new File(folder, lang + ".txt");
+			file.createNewFile();
+		} catch (IOException e) {
+			System.out.println("file cannot be created");
+		}
+    	
+    	//write content of array to a .txt file in repository folder 
+		try {
+			FileWriter writer= new FileWriter("/Users/alondra/eclipse-workspace/web_crawler2/repository/" +lang + ".txt");
+			
+			// write all content collected from content array
+			for(int index =0; index < arraySize; index++) {
+				writer.write(content[index]);
+			}
+			writer.close();
+		} catch (IOException e) {
+			System.out.println("cannot write to file");
+		}
+    }// end download
+    
+    
      public static void main(String[] args) throws IOException{
         Crawler englishCrawler = new Crawler();
         englishCrawler.crawl(PRIMARY_SEED, ENGLISH);
         System.out.println(englishCrawler.linkCollection);
-        System.out.println(englishCrawler.htmlContents[0]);    
+        System.out.println(englishCrawler.htmlContents[0]); 
+        download(htmlContents, ENGLISH);    
     }
 }

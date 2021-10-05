@@ -15,7 +15,7 @@ public class Crawler {
     public static final String SPANISH = "es";
     public static final String CHINESE = "zh";
     public static final String FRENCH = "fr";
-    public static final int MAX_CRAWL_COUNT = 10;
+    public static final int MAX_CRAWL_COUNT = 500;
     public static final String PRIMARY_SEED = "https://www.wikipedia.org/";
 
     // key = visited url, value = number of outlinks (csv)

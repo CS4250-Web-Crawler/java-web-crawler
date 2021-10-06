@@ -1,4 +1,5 @@
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.MalformedURLException;
@@ -17,7 +18,7 @@ public class Crawler {
     public static final String ES = "SPANISH";
     public static final String ZH = "CHINESE";
     public static final String FR = "FRENCH";
-    public static final int MAX_CRAWL_COUNT = 10;
+    public static final int MAX_CRAWL_COUNT = 50;
     public static final String PRIMARY_SEED = "https://www.wikipedia.org/";
 
     final LanguageDetector detector = LanguageDetectorBuilder.fromLanguages(ENGLISH, FRENCH, CHINESE, SPANISH).build();
@@ -27,7 +28,7 @@ public class Crawler {
     // keeps the count of visited urls (limit)
     public int visitedLinksCount;
     // holds the html content for each visited url (file)
-    public String[] htmlContents;
+    public static String[] htmlContents;
 
     public Crawler() {
         linkCollection = new HashMap<>();
@@ -80,7 +81,6 @@ public class Crawler {
                     } else {
                         System.out.println(url + "is not " + lang + ", it is " + detectedLanguage.toString());
                     }
-
             } catch(MalformedURLException e){
                 System.out.println("Error for " + url + ":" + e.getMessage());
             } catch (IOException e) {
@@ -91,20 +91,40 @@ public class Crawler {
         }
     }
 
-    //method that removes unwanted images, CSS, and JavaScript
+    // method that removes unwanted images, CSS, and JavaScript
     public String remove(String html) {
         Safelist wl = Safelist.relaxed();
         //remove style, script, and img tags
         wl.removeTags("style", "script", "img");
 
         //store the cleaned HTML in a new string
-        String cleanHTML = Jsoup.clean(html, wl);
-        return cleanHTML;
+        return Jsoup.clean(html, wl);
+    }
+
+    // iterate and write all html content to a text file in repository folder
+    public static void download(String[] content, String lang) {
+        //create file based on lang
+        File file = new File("src/repository/" + lang + ".txt");
+
+        //write content of array to a .txt file in repository folder
+        try {
+            FileWriter writer = new FileWriter(file, true);
+
+            // write all content collected from content array
+            for (String s : content) {
+                writer.write(s);                
+            }
+            writer.close();
+
+        } catch (IOException e) {
+            System.out.println("cannot write to file");
+        }
     }
 
     public static void main(String[] args) throws IOException{
         Crawler englishCrawler = new Crawler();
-        englishCrawler.crawl(PRIMARY_SEED, EN);        
+        englishCrawler.crawl(PRIMARY_SEED, EN);
+        download(htmlContents, EN);
 
         // create csv file
         File csvFile = new File("report.csv");
@@ -117,4 +137,3 @@ public class Crawler {
         output.close();
     }
 }
-

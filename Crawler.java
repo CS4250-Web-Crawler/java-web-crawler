@@ -8,7 +8,7 @@ import org.jsoup.Jsoup;
 import org.jsoup.Connection;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
-import org.jsoup.safety.Whitelist;
+import org.jsoup.safety.Safelist;
 import org.jsoup.select.Elements;
 
 public class Crawler {
@@ -16,8 +16,8 @@ public class Crawler {
     public static final String SPANISH = "es";
     public static final String CHINESE = "zh";
     public static final String FRENCH = "fr";
-    public static final int MAX_CRAWL_COUNT = 2;
-    public static final String PRIMARY_SEED = "https://www.cpp.edu/";
+    public static final int MAX_CRAWL_COUNT = 500;
+    public static final String PRIMARY_SEED = "https://www.wikipedia.org/";
 
     // key = visited url, value = number of outlinks (csv)
     public static HashMap<String, Integer> linkCollection;
@@ -79,9 +79,10 @@ public class Crawler {
             }
         }
     }
+
     //method that removes unwanted images, CSS, and JavaScript
     public String remove(String html) {
-        Whitelist wl = Whitelist.relaxed();
+        Safelist wl = Safelist.relaxed();
         //remove style, script, and img tags
         wl.removeTags("style", "script", "img");
 

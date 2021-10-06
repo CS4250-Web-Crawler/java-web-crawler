@@ -80,7 +80,7 @@ public class Crawler {
         }
     }
 
-    //method that removes unwanted images, CSS, and JavaScript
+    // method that removes unwanted images, CSS, and JavaScript
     public String remove(String html) {
         Safelist wl = Safelist.relaxed();
         //remove style, script, and img tags
@@ -92,32 +92,27 @@ public class Crawler {
 
     // iterate and write all html content to a text file in repository folder
     public static void download(String[] content, String lang) {
-        int arraySize = content.length;
-
         //create file based on lang
-        File file;
-        file = new File("src/repository/"+lang+".txt");
+        File file = new File("src/repository/" + lang + ".txt");
 
         //write content of array to a .txt file in repository folder
         try {
-            FileWriter writer= new FileWriter(file, true);
+            FileWriter writer = new FileWriter(file, true);
 
             // write all content collected from content array
             for (String s : content) {
-                writer.write(s);
-                writer.write("\n\n\n\n\n\n\n\n\n\n" );
+                writer.write(s);                
             }
             writer.close();
+
         } catch (IOException e) {
             System.out.println("cannot write to file");
         }
-    }// end download
+    }
 
     public static void main(String[] args) throws IOException{
         Crawler englishCrawler = new Crawler();
         englishCrawler.crawl(PRIMARY_SEED, ENGLISH);
-        System.out.println(englishCrawler.linkCollection);
-        System.out.println(englishCrawler.htmlContents[0]);
         download(htmlContents, ENGLISH);
 
         // create csv file

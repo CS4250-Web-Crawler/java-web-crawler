@@ -56,7 +56,7 @@ public class Crawler {
 
                 System.out.println("The language is " + detectedLanguage.toString());
 
-                // validate html lang
+                // validate html lang and in desired domain
                 if (detectedLanguage.toString().equals(lang)) {
                     // html might no have a head containing the lang attribute, need to change the validation method
                     System.out.println("Language Validated for URL:" + url);
@@ -70,10 +70,13 @@ public class Crawler {
                     int outlinksCount = 0;
                     // for each outlink, increment count and crawl it
                     for (Element page : linksOnPage) {
-                        outlinksCount++;
-                        String plainUrl = page.attr("abs:href");
-                        // might not do anything if the first step of validation isn't passed
-                        crawl(plainUrl, lang);
+                        //domain restriction
+                        if(page.attr("abs:href").contains("cpp.edu")) {
+                            outlinksCount++;
+                            String plainUrl = page.attr("abs:href");
+                            // might not do anything if the first step of validation isn't passed
+                            crawl(plainUrl, lang);
+                        }
                     }
 
                     // update the url with the correct outlinks count
@@ -151,4 +154,3 @@ public class Crawler {
         writeToCSV(linkCollection, ES);
     }
 }
-

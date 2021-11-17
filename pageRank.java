@@ -1,3 +1,5 @@
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.*;
 
 public class PageRank {
@@ -15,7 +17,7 @@ public class PageRank {
     pageUrlWithNumOfOutlinks.put("a", 1);
     pageUrlWithNumOfOutlinks.put("b", 2);
     pageUrlWithNumOfOutlinks.put("c", 3);
-    pageUrlWithNumOfOutlinks.put("d", 2);
+    pageUrlWithNumOfOutlinks.put("d", 2);    
     pageUrlWithOutlinks.put("a", new HashSet<>(Arrays.asList("b")));
     pageUrlWithOutlinks.put("b", new HashSet<>(Arrays.asList("a", "d")));
     pageUrlWithOutlinks.put("c", new HashSet<>(Arrays.asList("a", "b", "d")));
@@ -67,18 +69,36 @@ public class PageRank {
       System.out.println(" and " + page.getNumOfOutlinks() + " outlinks");
     }    
 
+    System.out.println("\n");
     // calculate page rank based on the relationship graph
-    for (Map.Entry<String, Page> entry : pages.entrySet()) {
-      Page page = entry.getValue();
-      double newPageRank = page.getPageRank();
-      ArrayList<Page> inlinkPages = page.getInlinkPages();
-      for (int i = 0; i < inlinkPages.size(); i++) {
-        Page inlinkPage = inlinkPages.get(i);
-        double inlinkPageRank = inlinkPage.getPageRank();
-        double inlinkNumOfOutlinks = inlinkPage.getNumOfOutlinks();
-        newPageRank += (inlinkPageRank / inlinkNumOfOutlinks);
-      }
-      page.setPageRank(newPageRank);
-    }        
+    // boolean noConvergence = true;
+    for (int i = 0; i < 2; i++) {      
+      // calculate the page rank but DO NOT update the page rank until we finish the current iteration
+      for (Map.Entry<String, Page> entry : pages.entrySet()) {
+        Page page = entry.getValue();            
+        double newPageRank = 0;
+        System.out.println("PageRank before calc for link " + page.getPageUrl() + " is " + newPageRank);
+        System.out.print("Calculation: ");
+        ArrayList<Page> inlinkPages = page.getInlinkPages();
+        for (int j = 0; j < inlinkPages.size(); j++) {
+          Page inlinkPage = inlinkPages.get(j);
+          double inlinkPageRank = inlinkPage.getPageRank();
+          double inlinkNumOfOutlinks = inlinkPage.getNumOfOutlinks();
+          System.out.print("(" + inlinkPageRank + " / " + inlinkNumOfOutlinks + ") + ");
+          newPageRank += (inlinkPageRank / inlinkNumOfOutlinks);
+        }        
+        page.setPageRank(new BigDecimal(newPageRank).setScale(4, RoundingMode.HALF_UP).doubleValue());
+        System.out.println("\nPageRank after calc for link " + page.getPageUrl() + " is " + newPageRank + "\n");      
+      }       
+
+      // test convergence and update the page rank so that we use the new page rank for the next iteration 
+      for (Map.Entry<String, Page> entry : pages.entrySet()) {
+        Page page = entry.getValue();
+
+        // insert converge code here 
+
+        page.updatePageRank();
+      }    
+    }
   }
 }

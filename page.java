@@ -14,6 +14,8 @@ public class Page {
       this.pageUrl = pageUrl;
       this.currPageRank = 1.0/numOfPages;
       this.newPageRank = 1.0/numOfPages;
+      // this.currPageRank = 1.0;
+      // this.newPageRank = 1.0;
       this.numOfOutlinks = 0;
       inlinkPages = new ArrayList<>();      
   }
@@ -37,11 +39,15 @@ public class Page {
 
   public double getPageRank() {
     return this.currPageRank;
-  }
+  }  
 
-  public double displayPageRank() {
+  public double getNewPageRank() {
     return this.newPageRank;
   }
+
+  public void updatePageRank() {    
+    currPageRank = newPageRank;
+  }  
 
   public void setNumOfOutlinks(int numOfOutlinks) {
     this.numOfOutlinks = numOfOutlinks;

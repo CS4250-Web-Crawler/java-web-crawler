@@ -2,6 +2,7 @@ import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+import org.jsoup.safety.Safelist;
 import org.jsoup.select.Elements;
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -9,9 +10,9 @@ import java.math.RoundingMode;
 import java.net.MalformedURLException;
 import java.util.*;
 
-public class PageRank_v3 {
+public class PageRank_v5 {
 
-    public static final int MAX_CRAWL_COUNT = 20;
+    public static final int MAX_CRAWL_COUNT = 5;
     public static final String CPP_PRIMARY_SEED = "https://www.CPP.edu";
     // key = visited url, value = number of outlinks (csv)
     public static HashMap<String, Integer> linkCollection;
@@ -20,17 +21,15 @@ public class PageRank_v3 {
 
     public static HashMap<String, HashSet<String>> pageUrlWithOutlinks = new HashMap<>();
 
-    public PageRank_v3() {
+    public PageRank_v5() {
         linkCollection = new HashMap<>();
         visitedLinksCount = 0;
     }
 
     public void crawl(String url) throws IOException {
-        //linkCollection  -> this keeps the url and the number outlinks that url has
 
-        // validate duplicates and crawling limit                                                   //todo: need the html to specify what is written on page regarding LA Lakers
+        // validate duplicates and crawling limit
         if (!linkCollection.containsKey(url) && visitedLinksCount < MAX_CRAWL_COUNT) {
-//            System.out.println("CURRENT URL: " + url + " and CURRENT COUNT: " + visitedLinksCount);
 
             try {
                 Connection connection = Jsoup.connect(url);
@@ -43,23 +42,21 @@ public class PageRank_v3 {
                 // mark current url as visited and initialize the num of outlinks with 0
                 linkCollection.put(url, 0);
                 int outlinksCount = 0;
-                String plainUrl = "";
+                String plainUrl = "";       // outlink absolute url
+                String newPlainUrl = "";    // outlink without https
+                String updatedUrl ="";      // seed without https
+                HashSet<String> hashSet = new HashSet<>();
 
-//                htmlContents[visitedLinksCount++] = remove(htmlString.toString());       --removes javascript and css
-
-
-                ArrayList<String> arrlist = new ArrayList<>();
+                updatedUrl = url.replace(" ","");       //removes empty space at the end of urls
 
                 // for each outlink, increment count and crawl it
                 for (Element page : linksOnPage) {
-                    if (page.attr("abs:href").contains("cpp.edu")) {
+                    if (page.attr("abs:href").contains("www.cpp.edu")) {
 
                         plainUrl = page.attr("abs:href");
-
-                        if (!arrlist.contains(plainUrl)) {
-                            arrlist.add(plainUrl);
-                            outlinksCount++;
-                        }
+//                        newPlainUrl = plainUrl.replace("http://","").replace("https://","");
+                        hashSet.add(plainUrl);
+                        outlinksCount++;
 
                         crawl(plainUrl);
                     }
@@ -68,17 +65,7 @@ public class PageRank_v3 {
                 // update the url with the correct outlinks count
                 linkCollection.put(url, outlinksCount);
 
-//                for(int i = 0; i < arrlist.size(); i++){
-//                    System.out.println("Array List stuff: " + arrlist.get(i));
-//                }
-
-                pageUrlWithOutlinks.put(url, new HashSet<>(arrlist));
-
-//
-//                System.out.println("Size of array: " + arrlist.size());
-//                System.out.println("Number of outLinks: " + outlinksCount);
-//                System.out.println("Visited Links: " + visitedLinksCount);
-
+                pageUrlWithOutlinks.put(updatedUrl, hashSet);
 
             } catch(MalformedURLException e){
                 System.out.println("Error for " + url + ":" + e.getMessage());
@@ -88,43 +75,20 @@ public class PageRank_v3 {
                 System.out.println("Error for " + url + ":" + e.getMessage());
             }
         }
+
     }
 
     public static void main(String[] args) throws IOException {
+        boolean noConvergence = true;
+        PageRank_v5 englishCrawler = new PageRank_v5();
 
-        PageRank_v3 englishCrawler = new PageRank_v3();
-
-        //crawl ESPN sites
+        //crawl CPP sites
         englishCrawler.crawl(CPP_PRIMARY_SEED);
 
         // populate by looping through the links
         Map<String, Page> pages = new HashMap<>();
 
-//            System.out.println();
-//            System.out.println("URl and URL ADDRESS ");
-//            for (Map.Entry<String, HashSet<String>> entry : pageUrlWithOutlinks.entrySet()) {
-//                System.out.println(entry.getKey() + " = " + entry.getValue());
-//            }
-//
-//            System.out.println();
-//            System.out.println("URl and number of outlinks ");
-//            for (Map.Entry<String, Integer> entry : linkCollection.entrySet()) {
-//                System.out.println(entry.getKey() + " = " + entry.getValue());
-//            }
-
-        // assume we get this info from crawler
-//        pageUrlWithNumOfOutlinks.put("a", 1);
-//        pageUrlWithNumOfOutlinks.put("b", 2);
-//        pageUrlWithNumOfOutlinks.put("c", 3);
-//        pageUrlWithNumOfOutlinks.put("d", 2);
-
-        //main url page -> list url
-//        pageUrlWithOutlinks.put("a", new HashSet<>(Arrays.asList("b")));
-////        pageUrlWithOutlinks.put("b", new HashSet<>(Arrays.asList("a", "d")));
-////        pageUrlWithOutlinks.put("c", new HashSet<>(Arrays.asList("a", "b", "d")));
-//        pageUrlWithOutlinks.put("d", new HashSet<>(Arrays.asList("a", "c")));
-//
-        // create all the page objects according to the pages we crawled
+//         create all the page objects according to the pages we crawled
         for (Map.Entry<String, HashSet<String>> entry : pageUrlWithOutlinks.entrySet()) {
             String pageUrl = entry.getKey();
             Page newPage = new Page(visitedLinksCount, pageUrl);
@@ -144,11 +108,11 @@ public class PageRank_v3 {
                 String pageOneUrl = entryOne.getKey();
                 String pageTwoUrl = entryTwo.getKey();
                 // skip if we are looking at the same entry
-                if (pageOneUrl == pageTwoUrl) continue;
+                if (pageOneUrl.equals(pageTwoUrl)) continue;
                 // iterate through all the outlinks and compare
                 for (String outlink : entryTwo.getValue()) {
                     // if there is a link match, then add it into the corresponding page object inlinkPages field
-                    if (entryOne.getKey() == outlink) {
+                    if (entryOne.getKey().equals(outlink)) {
                         // get the page object from the pages hashmap
                         Page pageOne = pages.get(pageOneUrl);
                         Page pageTwo = pages.get(pageTwoUrl);
@@ -170,11 +134,13 @@ public class PageRank_v3 {
             System.out.println(" and " + page.getNumOfOutlinks() + " outlinks");
         }
 
+        
         System.out.println("\n");
         // calculate page rank based on the relationship graph
         // boolean noConvergence = true;
-        for (int i = 0; i < 2; i++) {
+        while (noConvergence) {
             // calculate the page rank but DO NOT update the page rank until we finish the current iteration
+            noConvergence = false;
             for (Map.Entry<String, Page> entry : pages.entrySet()) {
                 Page page = entry.getValue();
                 double newPageRank = 0;
@@ -196,6 +162,11 @@ public class PageRank_v3 {
             for (Map.Entry<String, Page> entry : pages.entrySet()) {
                 Page page = entry.getValue();
 
+        /*Set noConvergence flag if the difference from current to new page rank is too high
+	      and if the last page rank isn't the same as the new pagerank */
+                if (Math.abs(page.getPageRank() - page.getNewPageRank()) > 0.001) {
+                    noConvergence = true;
+                }
                 // insert converge code here
 
                 page.updatePageRank();

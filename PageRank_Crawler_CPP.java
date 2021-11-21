@@ -10,7 +10,7 @@ import java.math.RoundingMode;
 import java.net.MalformedURLException;
 import java.util.*;
 
-public class PageRank_v5 {
+public class PageRank {
 
     public static final int MAX_CRAWL_COUNT = 5;
     public static final String CPP_PRIMARY_SEED = "https://www.CPP.edu";
@@ -21,7 +21,7 @@ public class PageRank_v5 {
 
     public static HashMap<String, HashSet<String>> pageUrlWithOutlinks = new HashMap<>();
 
-    public PageRank_v5() {
+    public PageRank() {
         linkCollection = new HashMap<>();
         visitedLinksCount = 0;
     }
@@ -80,7 +80,7 @@ public class PageRank_v5 {
 
     public static void main(String[] args) throws IOException {
         boolean noConvergence = true;
-        PageRank_v5 englishCrawler = new PageRank_v5();
+        PageRank englishCrawler = new PageRank();
 
         //crawl CPP sites
         englishCrawler.crawl(CPP_PRIMARY_SEED);

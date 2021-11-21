@@ -1,3 +1,4 @@
+
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -34,6 +35,12 @@ public class PageRank_v4 {
                 Connection connection = Jsoup.connect(url);
                 Document document = connection.get();
 
+                //String that holds all the html content of the url
+                String htmlString = document.html();
+                htmlString = remove(htmlString);
+                // System.out.println(htmlString);
+                if(htmlString.contains("Lakers")) {
+
                     visitedLinksCount++;
 
                     // get outlinks
@@ -43,14 +50,14 @@ public class PageRank_v4 {
                     int outlinksCount = 0;
                     String plainUrl = "";
                     String newPlainUrl = "";
-                    String updatedUrl ="";      // seed without https
+                    String updatedUrl = "";      // seed without https
 
                     ArrayList<String> arrlist = new ArrayList<>();
                     HashSet<String> hashSet = new HashSet<>();
 
-                    updatedUrl = url.replace(" ","");       //removes empty space at the end of urls
+                    updatedUrl = url.replace(" ", "");       //removes empty space at the end of urls
 
-                // for each outlink, increment count and crawl it
+                    // for each outlink, increment count and crawl it
                     for (Element page : linksOnPage) {
                         if (page.attr("abs:href").contains("www.espn.com/nba")) {
 
@@ -68,6 +75,8 @@ public class PageRank_v4 {
 
                     pageUrlWithOutlinks.put(updatedUrl, hashSet);
 
+                }
+
             } catch(MalformedURLException e){
                 System.out.println("Error for " + url + ":" + e.getMessage());
             } catch (IOException e) {
@@ -77,6 +86,15 @@ public class PageRank_v4 {
             }
         }
 
+    }
+
+    public String remove(String html) {
+        Safelist sl = Safelist.relaxed();
+        //remove style, script, and img tags
+        sl.removeTags("style", "script", "img", "a");
+
+        //return the cleaned HTML
+        return Jsoup.clean(html, sl);
     }
 
     public static void main(String[] args) throws IOException {

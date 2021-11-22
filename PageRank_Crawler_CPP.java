@@ -144,7 +144,7 @@ public class PageRank {
             for (Map.Entry<String, Page> entry : pages.entrySet()) {
                 Page page = entry.getValue();
                 double newPageRank = 0;
-                System.out.println("PageRank before calc for link " + page.getPageUrl() + " is " + newPageRank);
+                System.out.println("PageRank before calc for link " + page.getPageUrl() + " is " + page.getPageRank());
                 System.out.print("Calculation: ");
                 ArrayList<Page> inlinkPages = page.getInlinkPages();
                 for (int j = 0; j < inlinkPages.size(); j++) {

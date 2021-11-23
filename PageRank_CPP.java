@@ -12,7 +12,7 @@ import java.math.RoundingMode;
 import java.net.MalformedURLException;
 import java.util.*;
 
-public class PageRank_Crawler_CPP {
+public class PageRank_CPP {
 
     public static final int MAX_CRAWL_COUNT = 1000;
     public static final String CPP_PRIMARY_SEED = "https://www.cpp.edu/";
@@ -23,7 +23,7 @@ public class PageRank_Crawler_CPP {
 
     public static HashMap<String, HashSet<String>> pageUrlWithOutlinks = new HashMap<>();
 
-    public PageRank_Crawler_CPP() {
+    public PageRank_CPP() {
         linkCollection = new HashMap<>();
         visitedLinksCount = 0;
     }
@@ -74,7 +74,7 @@ public class PageRank_Crawler_CPP {
 
     public static void main(String[] args) throws IOException {
         boolean noConvergence = true;
-        PageRank_Crawler_CPP englishCrawler = new PageRank_Crawler_CPP();
+        PageRank_CPP englishCrawler = new PageRank_CPP();
 
         //crawl CPP sites
         englishCrawler.crawl(CPP_PRIMARY_SEED);

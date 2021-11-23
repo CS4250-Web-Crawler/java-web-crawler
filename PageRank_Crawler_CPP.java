@@ -4,16 +4,18 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.safety.Safelist;
 import org.jsoup.select.Elements;
+
+import java.io.FileWriter;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.net.MalformedURLException;
 import java.util.*;
 
-public class PageRank {
+public class PageRank_Crawler_CPP {
 
-    public static final int MAX_CRAWL_COUNT = 5;
-    public static final String CPP_PRIMARY_SEED = "https://www.CPP.edu";
+    public static final int MAX_CRAWL_COUNT = 1000;
+    public static final String CPP_PRIMARY_SEED = "https://www.cpp.edu/";
     // key = visited url, value = number of outlinks (csv)
     public static HashMap<String, Integer> linkCollection;
     // keeps the count of visited urls (limit)
@@ -21,7 +23,7 @@ public class PageRank {
 
     public static HashMap<String, HashSet<String>> pageUrlWithOutlinks = new HashMap<>();
 
-    public PageRank() {
+    public PageRank_Crawler_CPP() {
         linkCollection = new HashMap<>();
         visitedLinksCount = 0;
     }
@@ -43,29 +45,22 @@ public class PageRank {
                 linkCollection.put(url, 0);
                 int outlinksCount = 0;
                 String plainUrl = "";       // outlink absolute url
-                String newPlainUrl = "";    // outlink without https
-                String updatedUrl ="";      // seed without https
+
                 HashSet<String> hashSet = new HashSet<>();
 
-                updatedUrl = url.replace(" ","");       //removes empty space at the end of urls
-
-                // for each outlink, increment count and crawl it
+                // crawl pages with restricted cpp.edu domain
                 for (Element page : linksOnPage) {
                     if (page.attr("abs:href").contains("www.cpp.edu")) {
-
                         plainUrl = page.attr("abs:href");
-//                        newPlainUrl = plainUrl.replace("http://","").replace("https://","");
                         hashSet.add(plainUrl);
                         outlinksCount++;
-
                         crawl(plainUrl);
                     }
                 }
 
                 // update the url with the correct outlinks count
                 linkCollection.put(url, outlinksCount);
-
-                pageUrlWithOutlinks.put(updatedUrl, hashSet);
+                pageUrlWithOutlinks.put(url, hashSet);
 
             } catch(MalformedURLException e){
                 System.out.println("Error for " + url + ":" + e.getMessage());
@@ -75,15 +70,26 @@ public class PageRank {
                 System.out.println("Error for " + url + ":" + e.getMessage());
             }
         }
-
     }
 
     public static void main(String[] args) throws IOException {
         boolean noConvergence = true;
-        PageRank englishCrawler = new PageRank();
+        PageRank_Crawler_CPP englishCrawler = new PageRank_Crawler_CPP();
 
         //crawl CPP sites
         englishCrawler.crawl(CPP_PRIMARY_SEED);
+        for (Map.Entry<String, HashSet<String>> entry : pageUrlWithOutlinks.entrySet()) {
+            HashSet<String> currentHashSet = entry.getValue();
+            HashSet<String> updatedHashSet = new HashSet<>();
+            String currentUrl = entry.getKey();
+            for (String ele : currentHashSet) {
+                if (linkCollection.containsKey(ele)) {
+                    updatedHashSet.add(ele);
+                }
+            }
+            pageUrlWithOutlinks.put(currentUrl, updatedHashSet);
+            linkCollection.put(currentUrl, updatedHashSet.size());
+        }
 
         // populate by looping through the links
         Map<String, Page> pages = new HashMap<>();
@@ -107,9 +113,6 @@ public class PageRank {
             for (Map.Entry<String, HashSet<String>> entryTwo : pageUrlWithOutlinks.entrySet()) {
                 String pageOneUrl = entryOne.getKey();
                 String pageTwoUrl = entryTwo.getKey();
-                // skip if we are looking at the same entry
-                if (pageOneUrl.equals(pageTwoUrl)) continue;
-                // iterate through all the outlinks and compare
                 for (String outlink : entryTwo.getValue()) {
                     // if there is a link match, then add it into the corresponding page object inlinkPages field
                     if (entryOne.getKey().equals(outlink)) {
@@ -124,53 +127,94 @@ public class PageRank {
         }
 
         // display the graph
-        for (Map.Entry<String, Page> entry : pages.entrySet()) {
-            Page page = entry.getValue();
-            System.out.print("link " + page.getPageUrl() + " <-- ");
-            for (int i = 0; i < page.getInlinkPages().size(); i++) {
-                System.out.print(page.getInlinkPages().get(i).getPageUrl() + " ");
-            }
-            System.out.print("   with a page rank of " + page.getPageRank());
-            System.out.println(" and " + page.getNumOfOutlinks() + " outlinks");
-        }
+//        for (Map.Entry<String, Page> entry : pages.entrySet()) {
+//            Page page = entry.getValue();
+//            System.out.print("link " + page.getPageUrl() + " <-- ");
+//            for (int i = 0; i < page.getInlinkPages().size(); i++) {
+//                System.out.print(page.getInlinkPages().get(i).getPageUrl() + " ");
+//            }
+//            System.out.print("   with a page rank of " + page.getPageRank());
+//            System.out.println(" and " + page.getNumOfOutlinks() + " outlinks");
+//        }
 
-        
+
         System.out.println("\n");
-        // calculate page rank based on the relationship graph
-        // boolean noConvergence = true;
+
+        HashMap<String, Double> finalPageRanks = new HashMap<>();
+
         while (noConvergence) {
             // calculate the page rank but DO NOT update the page rank until we finish the current iteration
             noConvergence = false;
             for (Map.Entry<String, Page> entry : pages.entrySet()) {
                 Page page = entry.getValue();
                 double newPageRank = 0;
-                System.out.println("PageRank before calc for link " + page.getPageUrl() + " is " + page.getPageRank());
-                System.out.print("Calculation: ");
+//                System.out.println("PageRank before calc for link " + page.getPageUrl() + " is " + page.getPageRank());
+//                System.out.print("Calculation: ");
                 ArrayList<Page> inlinkPages = page.getInlinkPages();
                 for (int j = 0; j < inlinkPages.size(); j++) {
                     Page inlinkPage = inlinkPages.get(j);
                     double inlinkPageRank = inlinkPage.getPageRank();
                     double inlinkNumOfOutlinks = inlinkPage.getNumOfOutlinks();
-                    System.out.print("(" + inlinkPageRank + " / " + inlinkNumOfOutlinks + ") + ");
+//                    System.out.print("(" + inlinkPageRank + " / " + inlinkNumOfOutlinks + ") + ");
                     newPageRank += (inlinkPageRank / inlinkNumOfOutlinks);
                 }
                 page.setPageRank(new BigDecimal(newPageRank).setScale(4, RoundingMode.HALF_UP).doubleValue());
-                System.out.println("\nPageRank after calc for link " + page.getPageUrl() + " is " + newPageRank + "\n");
+//                System.out.println("\nPageRank after calc for link " + page.getPageUrl() + " is " + newPageRank + "\n");
+
+                //Store url and updated page ranks into a new hashmap so we can sort it at the end
+                finalPageRanks.put(page.getPageUrl(), newPageRank);
             }
+
+//            System.out.println();
+//            System.out.println("Final Page Rank HashMap ");
+//            for (Map.Entry<String, Double> entry : finalPageRanks.entrySet()) {
+//                System.out.println(entry.getKey() + " = " + entry.getValue());
+//            }
 
             // test convergence and update the page rank so that we use the new page rank for the next iteration
             for (Map.Entry<String, Page> entry : pages.entrySet()) {
                 Page page = entry.getValue();
 
         /*Set noConvergence flag if the difference from current to new page rank is too high
-	      and if the last page rank isn't the same as the new pagerank */
+         and if the last page rank isn't the same as the new pagerank */
                 if (Math.abs(page.getPageRank() - page.getNewPageRank()) > 0.001) {
                     noConvergence = true;
                 }
-                // insert converge code here
-
                 page.updatePageRank();
             }
         }
-    }
+
+        //compare and sort in descending order
+        Set<Map.Entry<String, Double>> set = finalPageRanks.entrySet();
+        List<Map.Entry<String, Double>> list = new ArrayList<Map.Entry<String, Double>>(
+                set);
+        Collections.sort(list, new Comparator<Map.Entry<String, Double>>() {
+            public int compare(Map.Entry<String, Double> o1,
+                               Map.Entry<String, Double> o2) {
+                return o2.getValue().compareTo(o1.getValue());
+            }
+        });
+
+        //Print out top 100 most important pages to file
+            FileWriter output = new FileWriter("100MostImportantPages_CPP.txt");
+            int index = 1;
+            for (Map.Entry<String, Double> entry : list) {
+                if (index > 100) {
+                    break;
+                }
+                output.write(index + ". " + entry.getKey() + " = " + entry.getValue() + '\n');
+                index++;
+            }
+
+            double totalSum = 0.0;
+            for (Map.Entry<String, Page> entry : pages.entrySet()) {
+                Page page = entry.getValue();
+                totalSum += page.getPageRank();
+            }
+
+            output.write("\n");
+            output.write("The total page rank sum is: " + totalSum);
+
+                output.close();
+        }
 }

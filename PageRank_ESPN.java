@@ -12,10 +12,10 @@ import java.math.RoundingMode;
 import java.net.MalformedURLException;
 import java.util.*;
 
-public class Crawler_PageRank_ESPN {
+public class PageRank_ESPN {
 
-    public static final int MAX_CRAWL_COUNT = 20;
-    public static final String CPP_PRIMARY_SEED = "https://www.espn.com/nba";
+    public static final int MAX_CRAWL_COUNT = 1000;
+    public static final String ESPN_PRIMARY_SEED = "https://www.espn.com/nba";
     // key = visited url, value = number of outlinks (csv)
     public static HashMap<String, Integer> linkCollection;
     // keeps the count of visited urls (limit)
@@ -23,7 +23,7 @@ public class Crawler_PageRank_ESPN {
 
     public static HashMap<String, HashSet<String>> pageUrlWithOutlinks = new HashMap<>();
 
-    public Crawler_PageRank_ESPN() {
+    public PageRank_ESPN() {
         linkCollection = new HashMap<>();
         visitedLinksCount = 0;
     }
@@ -89,10 +89,10 @@ public class Crawler_PageRank_ESPN {
 
     public static void main(String[] args) throws IOException {
         boolean noConvergence = true;
-        Crawler_PageRank_ESPN englishCrawler = new Crawler_PageRank_ESPN();
+        PageRank_ESPN englishCrawler = new PageRank_ESPN();
 
         //crawl CPP sites
-        englishCrawler.crawl(CPP_PRIMARY_SEED);
+        englishCrawler.crawl(ESPN_PRIMARY_SEED);
         for (Map.Entry<String, HashSet<String>> entry : pageUrlWithOutlinks.entrySet()) {
             HashSet<String> currentHashSet = entry.getValue();
             HashSet<String> updatedHashSet = new HashSet<>();
